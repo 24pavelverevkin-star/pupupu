@@ -29,10 +29,7 @@ public class ConsoleCommandListener implements CommandLineRunner {
         // Це критично важливо: інакше Scanner заблокує запуск веб-сайту!
         Thread consoleThread = new Thread(() -> {
             Scanner scanner = new Scanner(System.in);
-            System.out.println("\n----------------------------------------------------------");
-            System.out.println(" СЕРВЕР ЗАПУЩЕНО! Веб-сайт працює.");
-            System.out.println(" Ви можете вводити команди (insert/update...) прямо тут.");
-            System.out.println("----------------------------------------------------------\n");
+
 
             while (true) {
                 // Чекаємо введення, не навантажуючи процесор

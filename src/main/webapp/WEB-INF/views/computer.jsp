@@ -12,6 +12,14 @@
     </style>
 </head>
 <body>
+<div style="margin-bottom: 20px;">
+    <a href="/" style="text-decoration: none; font-size: 16px; color: #007bff;">⬅ На головну</a>
+    <span style="margin: 0 10px;">|</span>
+    <a href="/country">Країни</a> |
+    <a href="/company">Компанії</a> |
+    <a href="/computer">Комп'ютери</a>
+</div>
+<hr>
 <h1>Комп'ютери (захищена від SQL-Injection)</h1>
 
 <h2>Список комп'ютерів</h2>

@@ -1,4 +1,4 @@
-package com.example.computer_db;
+package com.example.computerdb;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
