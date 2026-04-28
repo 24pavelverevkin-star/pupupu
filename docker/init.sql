@@ -32,3 +32,14 @@ INSERT INTO computer (model, company_id, price) VALUES
 ('ThinkPad X1', 2, 1800.00),
 ('XPS 13', 3, 2200.00)
 ON CONFLICT DO NOTHING;
+CREATE TABLE IF NOT EXISTS users (
+                                     username VARCHAR(50) PRIMARY KEY,
+    password VARCHAR(100) NOT NULL,
+    enabled BOOLEAN NOT NULL,
+    role VARCHAR(50) NOT NULL
+    );
+
+INSERT INTO users (username, password, enabled, role) VALUES
+                                                          ('admin', 'admin123', true, 'ROLE_ADMIN'),
+                                                          ('user', 'user123', true, 'ROLE_USER')
+    ON CONFLICT DO NOTHING;
