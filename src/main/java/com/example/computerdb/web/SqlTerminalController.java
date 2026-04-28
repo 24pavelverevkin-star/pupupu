@@ -11,17 +11,17 @@ import java.util.Map;
 public class SqlTerminalController {
 
     @Autowired
-    private JdbcTemplate jdbcTemplate;
+    private JdbcTemplate jdbcTemplate;//текст
 
     @PostMapping("/execute")
     public Object executeQuery(@RequestParam String query) {
         try {
             String cleanQuery = query.trim();
-            // Якщо запит починається з SELECT, повертаємо список рядків
+            // читання
             if (cleanQuery.toUpperCase().startsWith("SELECT")) {
                 return jdbcTemplate.queryForList(cleanQuery);
             } else {
-                // Для INSERT/UPDATE/DELETE повертаємо кількість змінених рядків
+                // рядки
                 int rows = jdbcTemplate.update(cleanQuery);
                 return Map.of("message", "Успішно! Змінено рядків: " + rows);
             }
