@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
 <html>
 <head>
     <title>Компанії - Computer DB</title>
@@ -13,16 +14,22 @@
         #sqlInput { width: 100%; font-family: monospace; margin-top: 10px; font-size: 16px; }
         .btn-example { padding: 8px 12px; margin-right: 10px; cursor: pointer; }
         #statusMessage { margin: 15px 0; font-weight: bold; }
+        .user-panel { float: right; padding: 10px; background: #f4f4f4; border-radius: 8px; border: 1px solid #ccc; }
     </style>
 </head>
 <body>
 
+    <div class="user-panel">
+        Ви увійшли як: <b><sec:authentication property="name"/></b>
+        <form method="post" action="/logout" style="display:inline; margin-left: 10px;">
+            <button type="submit" style="cursor: pointer;">Вийти</button>
+        </form>
+    </div>
+
     <div style="margin-bottom: 20px;">
         <a href="/" style="text-decoration: none; color: #007bff;">⬅ На головну</a>
         <span style="margin: 0 10px;">|</span>
-        <a href="/country">Країни</a> |
-        <a href="/company">Компанії</a> |
-        <a href="/computer">Комп'ютери</a>
+        <a href="/country">Країни</a> | <a href="/company">Компанії</a> | <a href="/computer">Комп'ютери</a>
     </div>
     <hr>
 
@@ -35,7 +42,9 @@
                 <th>ID</th>
                 <th>Назва</th>
                 <th>ID Країни</th>
-                <th>Дії</th>
+                <sec:authorize access="hasRole('ADMIN')">
+                    <th>Дії</th>
+                </sec:authorize>
             </tr>
         </thead>
         <tbody>
@@ -44,12 +53,14 @@
                     <td><c:out value="${c.id}"/></td>
                     <td><c:out value="${c.name}"/></td>
                     <td><c:out value="${c.countryId}"/></td>
-                    <td>
-                        <form method="post" action="/company/delete" style="display:inline;">
-                            <input type="hidden" name="id" value="<c:out value='${c.id}'/>">
-                            <button type="submit" onclick="return confirm('Видалити?')">Видалити</button>
-                        </form>
-                    </td>
+                    <sec:authorize access="hasRole('ADMIN')">
+                        <td>
+                            <form method="post" action="/company/delete" style="display:inline;">
+                                <input type="hidden" name="id" value="<c:out value='${c.id}'/>">
+                                <button type="submit" onclick="return confirm('Видалити?')">Видалити</button>
+                            </form>
+                        </td>
+                    </sec:authorize>
                 </tr>
             </c:forEach>
         </tbody>
@@ -59,8 +70,10 @@
         <h2>SQL Термінал (Компанії)</h2>
         <div style="margin-bottom: 15px;">
             <button class="btn-example" onclick="setQuery('SELECT * FROM company')">📋 Показати всі</button>
-            <button class="btn-example" style="color: green;" onclick="setQuery('INSERT INTO company (name, country_id) VALUES (\'Asus\', 1)')">➕ Додати (INSERT)</button>
-            <button class="btn-example" style="color: red;" onclick="setQuery('DELETE FROM company WHERE name = \'Asus\'')">❌ Видалити (DELETE)</button>
+            <sec:authorize access="hasRole('ADMIN')">
+                <button class="btn-example" style="color: green;" onclick="setQuery('INSERT INTO company (name, country_id) VALUES (\'Asus\', 1)')">➕ Додати (INSERT)</button>
+                <button class="btn-example" style="color: red;" onclick="setQuery('DELETE FROM company WHERE name = \'Asus\'')">❌ Видалити (DELETE)</button>
+            </sec:authorize>
         </div>
 
         <textarea id="sqlInput" rows="4">SELECT * FROM company;</textarea>
@@ -82,7 +95,6 @@
             const resultDiv = document.getElementById('queryResult');
             status.innerText = "Запит виконується...";
             resultDiv.innerHTML = "";
-
             try {
                 const response = await fetch('/api/sql/execute?query=' + encodeURIComponent(query), { method: 'POST' });
                 const data = await response.json();

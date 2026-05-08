@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
 <html>
 <head>
     <title>Комп'ютери - Computer DB</title>
@@ -9,23 +10,28 @@
         th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
         th { background: #f0f0f0; }
         form { margin: 5px 0; }
-        /* Стилі терміналу */
         .terminal-section { margin-top: 40px; padding: 20px; border: 2px solid #333; background: #f4f4f4; border-radius: 8px; }
         #sqlInput { width: 100%; font-family: 'Courier New', monospace; margin-top: 10px; font-size: 16px; padding: 10px; box-sizing: border-box; }
         .btn-example { padding: 8px 12px; margin-right: 10px; cursor: pointer; background: #e0e0e0; border: 1px solid #999; border-radius: 4px; }
         .btn-example:hover { background: #d0d0d0; }
         #statusMessage { margin: 15px 0; font-weight: bold; }
         #queryResult table { background: white; width: 100%; }
+        .user-panel { float: right; padding: 10px; background: #f4f4f4; border-radius: 8px; border: 1px solid #ccc; }
     </style>
 </head>
 <body>
 
+    <div class="user-panel">
+        Ви увійшли як: <b><sec:authentication property="name"/></b>
+        <form method="post" action="/logout" style="display:inline; margin-left: 10px;">
+            <button type="submit" style="cursor: pointer;">Вийти</button>
+        </form>
+    </div>
+
     <div style="margin-bottom: 20px;">
         <a href="/" style="text-decoration: none; color: #007bff;">⬅ На головну</a>
         <span style="margin: 0 10px;">|</span>
-        <a href="/country">Країни</a> |
-        <a href="/company">Компанії</a> |
-        <a href="/computer">Комп'ютери</a>
+        <a href="/country">Країни</a> | <a href="/company">Компанії</a> | <a href="/computer">Комп'ютери</a>
     </div>
     <hr>
 
@@ -39,7 +45,9 @@
                 <th>Модель</th>
                 <th>Ціна</th>
                 <th>ID Компанії</th>
-                <th>Дії</th>
+                <sec:authorize access="hasRole('ADMIN')">
+                    <th>Дії</th>
+                </sec:authorize>
             </tr>
         </thead>
         <tbody>
@@ -49,12 +57,14 @@
                     <td><c:out value="${c.model}"/></td>
                     <td><c:out value="${c.price}"/></td>
                     <td><c:out value="${c.companyId}"/></td>
-                    <td>
-                        <form method="post" action="/computer/delete" style="display:inline;">
-                            <input type="hidden" name="id" value="<c:out value='${c.id}'/>">
-                            <button type="submit" onclick="return confirm('Видалити?')">Видалити</button>
-                        </form>
-                    </td>
+                    <sec:authorize access="hasRole('ADMIN')">
+                        <td>
+                            <form method="post" action="/computer/delete" style="display:inline;">
+                                <input type="hidden" name="id" value="<c:out value='${c.id}'/>">
+                                <button type="submit" onclick="return confirm('Видалити?')">Видалити</button>
+                            </form>
+                        </td>
+                    </sec:authorize>
                 </tr>
             </c:forEach>
         </tbody>
@@ -67,20 +77,17 @@
         <div style="margin-bottom: 15px;">
             <button class="btn-example" onclick="setQuery('SELECT * FROM computer')">📋 Показати всі</button>
 
-            <button class="btn-example" style="color: #2e7d32;"
-                    onclick="setQuery('INSERT INTO computer (model, price, company_id) VALUES (\'MacBook Air\', 1200.00, 1)')">
-                ➕ Приклад: Додати (INSERT)
-            </button>
-
-            <button class="btn-example" style="color: #0056b3;"
-                    onclick="setQuery('UPDATE computer SET model = \'MacBook Pro M3\' WHERE id = 1')">
-                📝 Приклад: Оновити (UPDATE)
-            </button>
-
-            <button class="btn-example" style="color: #c62828;"
-                    onclick="setQuery('DELETE FROM computer WHERE model = \'MacBook Air\'')">
-                ❌ Приклад: Видалити (DELETE)
-            </button>
+            <sec:authorize access="hasRole('ADMIN')">
+                <button class="btn-example" style="color: #2e7d32;" onclick="setQuery('INSERT INTO computer (model, price, company_id) VALUES (\'MacBook Air\', 1200.00, 1)')">
+                    ➕ Приклад: Додати (INSERT)
+                </button>
+                <button class="btn-example" style="color: #0056b3;" onclick="setQuery('UPDATE computer SET model = \'MacBook Pro M3\' WHERE id = 1')">
+                    📝 Приклад: Оновити (UPDATE)
+                </button>
+                <button class="btn-example" style="color: #c62828;" onclick="setQuery('DELETE FROM computer WHERE model = \'MacBook Air\'')">
+                    ❌ Приклад: Видалити (DELETE)
+                </button>
+            </sec:authorize>
         </div>
 
         <textarea id="sqlInput" rows="4">SELECT * FROM computer;</textarea>
@@ -106,12 +113,10 @@
             status.innerText = "Запит виконується...";
             status.style.color = "blue";
             resultDiv.innerHTML = "";
-
             try {
                 const response = await fetch('/api/sql/execute?query=' + encodeURIComponent(query), {
                     method: 'POST'
                 });
-
                 const data = await response.json();
 
                 if (data.error) {
@@ -120,7 +125,6 @@
                 } else if (data.message) {
                     status.style.color = "green";
                     status.innerText = data.message;
-                    // Автоматичне оновлення основної таблиці через 1.5 сек
                     setTimeout(function() { location.reload(); }, 1500);
                 } else {
                     status.style.color = "green";
@@ -147,7 +151,6 @@
                 html += "<th>" + headers[i].toUpperCase() + "</th>";
             }
             html += "</tr></thead><tbody>";
-
             for (var j = 0; j < data.length; j++) {
                 html += "<tr>";
                 for (var k = 0; k < headers.length; k++) {
