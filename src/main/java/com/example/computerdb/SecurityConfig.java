@@ -19,14 +19,11 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                // Вимикаємо CSRF для спрощення роботи POST-запитів з JS (fetch) та консолі
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests((requests) -> requests
-                        // Дозволяємо модифікацію даних ТІЛЬКИ адміністратору
                         .requestMatchers("/country/create", "/country/update", "/country/delete",
                                 "/company/create", "/company/update", "/company/delete",
                                 "/computer/create", "/computer/update", "/computer/delete").hasRole("ADMIN")
-                        // Всі інші сторінки вимагають простої авторизації
                         .anyRequest().authenticated()
                 )
                 .formLogin((form) -> form.permitAll())

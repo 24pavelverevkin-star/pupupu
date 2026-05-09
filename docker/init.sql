@@ -1,17 +1,15 @@
--- Таблиця: країна
 CREATE TABLE IF NOT EXISTS country (
     id   SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL UNIQUE
 );
 
--- Таблиця: фірма
 CREATE TABLE IF NOT EXISTS company (
     id         SERIAL PRIMARY KEY,
     name       VARCHAR(150) NOT NULL,
     country_id INTEGER NOT NULL REFERENCES country(id) ON DELETE CASCADE
 );
 
--- Таблиця: комп’ютер
+
 CREATE TABLE IF NOT EXISTS computer (
     id          SERIAL PRIMARY KEY,
     model       VARCHAR(150) NOT NULL,
@@ -35,7 +33,7 @@ ON CONFLICT DO NOTHING;
 CREATE TABLE IF NOT EXISTS users (
                                      username VARCHAR(50) PRIMARY KEY,
     password VARCHAR(100) NOT NULL,
-    enabled BOOLEAN NOT NULL,
+    enabled BOOLEAN NOT NULL,cd
     role VARCHAR(50) NOT NULL
     );
 
